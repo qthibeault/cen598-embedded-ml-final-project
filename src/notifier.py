@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from csv import DictReader
 from dataclasses import dataclass
 from enum import Enum, auto
+from pathlib import Path
 from time import sleep
-from typing import Iterable, Final
+from typing import Iterable, Final, Protocol
 
 from board import I2C
 from adafruit_adxl345 import ADXL345, Range
@@ -16,6 +18,10 @@ key = '5032578'
 phone = '14804557790'
 
 N_SAMPLES: Final[int] = 32
+
+
+class Acceleration(Protocol):
+    acceleration: tuple[float, float, float]
 
 
 class Load(Enum):
@@ -56,7 +62,37 @@ class Features:
         return [self.x_norm, self.y_norm, self.z_norm, self.movement]
 
 
-def sample_appliance(imu: ADXL345) -> Sample:
+def get_appliances() -> tuple[ADXL345, ADXL345]:
+    i2c = I2C()
+
+    washer = ADXL345(i2c, 0x53)
+    washer.range = Range.RANGE_2_G
+
+    dryer = ADXL345(i2c, 0x1d)
+    dryer.range = Range.RANGE_2_G
+
+    return washer, dryer
+
+
+class Recording:
+    def __init__(self, name: str, reader: DictReader):
+        self.name = name
+        self.lines = iter(reader)
+
+    @property
+    def acceleration(self):
+        line = next(self.lines)
+        return line[f"{self.name}_x"], line[f"{self.name}_y"], line[f"{self.name}_z"]
+
+
+def get_recordings(recordings: Path) -> tuple[Recording, Recording]:
+    washer = Recording("washer", DictReader(recordings.open())) 
+    dryer = Recording("dryer", DictReader(recordings.open()))
+
+    return washer, dryer 
+    
+
+def sample_appliance(imu: Acceleration) -> Sample:
     x, y, z = imu.acceleration
     return Sample(x, y, z)
 
@@ -97,15 +133,11 @@ def send_notification(appliance: str, load: Load):
 
 
 def main():
-    i2c = I2C()
-    washer = ADXL345(i2c, 0x53)
-    washer.range = Range.RANGE_2_G
+    washer, dryer = get_appliances()
     washer_state: State = PowerOff()
     washer_samples: list[Sample] = []
     prev_washer_movement = 0
 
-    dryer = ADXL345(i2c, 0x1d)
-    dryer.range = Range.RANGE_2_G
     dryer_state: State = PowerOff()
     dryer_samples: list[Sample] = []
     prev_dryer_movement = 0
