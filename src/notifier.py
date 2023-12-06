@@ -90,7 +90,8 @@ def predict_state(features: Features) -> State:
 def send_notification(appliance: str, load: Load):
     print(f"==> {appliance} just completed a {load} load.")
 
-    encoded = requests.utils.quote(f"{appliance} just completed a {load} load!")
+    load_str = 'light' if load == Load.LIGHT else 'heavy'
+    encoded = requests.utils.quote(f"{appliance} just completed a {load_str} load!")
     url = f'https://api.callmebot.com/whatsapp.php?phone={phone}&text={encoded}&apikey={key}'
     requests.get(url)
 
