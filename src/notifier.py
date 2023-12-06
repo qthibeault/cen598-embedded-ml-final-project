@@ -36,6 +36,9 @@ class Sample:
     y: float
     z: float
 
+    def as_list(self) -> list[float]:
+        return [self.x, self.y, self.z]
+
 
 @dataclass
 class Features:
