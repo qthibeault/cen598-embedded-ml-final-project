@@ -1,4 +1,5 @@
 #include <array>
+#include <iostream>
 
 #include "nanobind/nanobind.h"
 #include "nanobind/stl/array.h"
@@ -22,15 +23,14 @@ static TfLiteInterpreter* power_interp = TfLiteInterpreterCreate(power_model, po
 int predict_load(const std::array<float, 4>& samples)
 {
     TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(load_interp, 0);
-    TfLiteTensorCopyFromBuffer(input_tensor, samples.data(), samples.size());
+    TfLiteTensorCopyFromBuffer(input_tensor, samples.data(), samples.size() * sizeof(float));
     TfLiteInterpreterInvoke(load_interp);
 
-    const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(load_interp, 0);
-
     std::array<float, 2> output;
+    const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(load_interp, 0);
     TfLiteTensorCopyToBuffer(output_tensor, output.data(), output.size() * sizeof(float));
 
-    if (output[1] > 0) {
+    if (output[1] > output[0]) {
         return 1;
     }
 
@@ -40,7 +40,7 @@ int predict_load(const std::array<float, 4>& samples)
 bool predict_active(const std::array<float, 4>& samples)
 {
     TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(power_interp, 0);
-    TfLiteTensorCopyFromBuffer(input_tensor, samples.data(), samples.size());
+    TfLiteTensorCopyFromBuffer(input_tensor, samples.data(), samples.size() * sizeof(float));
     TfLiteInterpreterInvoke(power_interp);
 
     const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(power_interp, 0);
@@ -48,7 +48,7 @@ bool predict_active(const std::array<float, 4>& samples)
     std::array<float, 2> output;
     TfLiteTensorCopyToBuffer(output_tensor, output.data(), output.size() * sizeof(float));
 
-    if (output[1] > 0) {
+    if (output[1] > output[0]) {
         return true;
     }
 
