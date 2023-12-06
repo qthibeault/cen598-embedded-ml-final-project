@@ -10,6 +10,10 @@ from adafruit_adxl345 import ADXL345, Range
 
 from predictor import predict_load, predict_power
 import numpy as np
+import requests
+
+key = '5032578'
+phone = '14804557790'
 
 N_SAMPLES: Final[int] = 32
 
@@ -85,6 +89,10 @@ def predict_state(features: Features) -> State:
 
 def send_notification(appliance: str, load: Load):
     print(f"==> {appliance} just completed a {load} load.")
+
+    encoded = requests.utils.quote(f"{appliance} just completed a {load} load!")
+    url = f'https://api.callmebot.com/whatsapp.php?phone={phone}&text={encoded}&apikey={key}'
+    requests.get(url)
 
 
 def main():
