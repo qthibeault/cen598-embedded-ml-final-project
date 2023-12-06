@@ -8,13 +8,9 @@ from time import sleep
 from typing import Iterable, Final, Protocol
 
 import numpy as np
-import requests
 from click import command, option
 
 from predictor import predict_load, predict_active
-
-key = '5032578'
-phone = '14804557790'
 
 N_SAMPLES: Final[int] = 32
 
@@ -137,11 +133,6 @@ def predict_state(features: Features) -> State:
 def send_notification(appliance: str, load: Load):
     print(f"==> {appliance} just completed a {load} load.")
 
-    load_str = 'light' if load == Load.LIGHT else 'heavy'
-    encoded = requests.utils.quote(f"{appliance} just completed a {load_str} load!")
-    url = f'https://api.callmebot.com/whatsapp.php?phone={phone}&text={encoded}&apikey={key}'
-    requests.get(url)
-
 
 @command("notifier")
 @option("--recording", default=None)
@@ -158,14 +149,20 @@ def main(recording: str | None):
     dryer_state: State = PowerOff()
     dryer_samples: list[Sample] = []
     prev_dryer_movement = 0
+    n_count = 0
 
     while True:
         washer_samples.append(sample_appliance(washer))
         dryer_samples.append(sample_appliance(dryer))
 
         if len(washer_samples) == N_SAMPLES:
+            n_count += 1
             washer_features = compute_features(washer_samples, prev_washer_movement)
-            next_washer_state = predict_state(washer_features)
+
+            if n_count < 6:
+                next_washer_state = predict_state(washer_features)
+            else:
+                next_washer_state = PowerOff()
 
             print(f"Washer State: {next_washer_state}")
 
