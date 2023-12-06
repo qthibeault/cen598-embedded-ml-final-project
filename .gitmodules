@@ -1,0 +1,6 @@
+[submodule "predictor/third_party/nanobind"]
+	path = predictor/third_party/nanobind
+	url = https://github.com/wjakob/nanobind
+[submodule "predictor/third_party/tensorflow"]
+	path = predictor/third_party/tensorflow
+	url = https://github.com/tensorflow/tensorflow
