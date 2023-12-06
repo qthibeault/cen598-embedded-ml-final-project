@@ -27,10 +27,14 @@ int predict_load(const std::array<float, 4>& samples)
 
     const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(load_interp, 0);
 
-    std::array<float, 1> output;
+    std::array<float, 2> output;
     TfLiteTensorCopyToBuffer(output_tensor, output.data(), output.size() * sizeof(float));
 
-    return output.front();
+    if (output[1] > 0) {
+        return 1;
+    }
+
+    return -1;
 }
 
 bool predict_active(const std::array<float, 4>& samples)
@@ -41,10 +45,14 @@ bool predict_active(const std::array<float, 4>& samples)
 
     const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(power_interp, 0);
 
-    std::array<float, 1> output;
+    std::array<float, 2> output;
     TfLiteTensorCopyToBuffer(output_tensor, output.data(), output.size() * sizeof(float));
 
-    return output.front();
+    if (output[1] > 0) {
+        return true;
+    }
+
+    return false;
 }
 
 NB_MODULE(predictor, m) {
