@@ -1,3 +1,0 @@
-#/usr/bin/env sh
-
-PYTHONPATH=./build/predictor:${PYTHONPATH} python3 src/notifier.py

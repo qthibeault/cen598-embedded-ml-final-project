@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+click = "*"
+adafruit-circuitpython-adxl34x = "*"
+requests = "*"
+
+[dev-packages]
+
+[requires]
+python = "3.10"

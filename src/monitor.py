@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import time
 import board
 import adafruit_adxl34x
@@ -29,5 +27,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# vim: ft=python
